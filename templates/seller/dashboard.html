@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Seller Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">Seller Dashboard</h2>
+    <small class="text-muted">Store: <strong>{{ store.store_name }}</strong></small>
+  </div>
+    <div>
+    <a href="{{ url_for('seller.analytics') }}" class="btn btn-outline-primary me-2">Analytics</a>
+    <a href="{{ url_for('seller.orders') }}" class="btn btn-outline-primary me-2">View Orders</a>
+    <a href="{{ url_for('seller.add_product') }}" class="btn btn-success">+ Add Product</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm text-center p-3">
+      <div class="fs-3 fw-bold">{{ stats.total }}</div><div class="text-muted">Products listed</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm text-center p-3">
+      <div class="fs-3 fw-bold">{{ stats.units }}</div><div class="text-muted">Units in stock</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm text-center p-3">
+      <div class="fs-3 fw-bold {{ 'text-danger' if stats.out_of_stock }}">{{ stats.out_of_stock }}</div>
+      <div class="text-muted">Out of stock</div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="mb-3">My Products</h5>
+    {% if products %}
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td>
+              <strong>{{ p.name }}</strong><br>
+              <small class="text-muted">{{ (p.description or '')[:60] }}</small>
+            </td>
+            <td>{{ p.category or '-' }}</td>
+            <td>₹{{ "%.2f"|format(p.price) }}</td>
+            <td>
+              {% if p.stock == 0 %}<span class="badge bg-danger">Out of stock</span>
+              {% elif p.stock <= 5 %}<span class="badge bg-warning text-dark">{{ p.stock }} (low)</span>
+              {% else %}{{ p.stock }}{% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('seller.edit_product', product_id=p.product_id) }}"
+                 class="btn btn-sm btn-outline-primary">Edit</a>
+              <form method="POST" class="d-inline"
+                    action="{{ url_for('seller.delete_product', product_id=p.product_id) }}"
+                    onsubmit="return confirm('Delete {{ p.name|e }}? It will be removed from all customer carts. Past orders are kept.');">
+                <button class="btn btn-sm btn-outline-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted mb-0">You haven't listed anything yet. Click <strong>+ Add Product</strong> to start.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

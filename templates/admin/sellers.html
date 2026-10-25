@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Sellers: Admin{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Admin Panel</h2>
+{% include "admin/_tabs.html" %}
+
+<form method="GET" class="row g-2 mb-3">
+  <div class="col-md-6"><input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search store, name or email"></div>
+  <div class="col-md-6 d-flex gap-2">
+    <button class="btn btn-primary">Search</button>
+    <a href="{{ url_for('admin.sellers') }}" class="btn btn-outline-secondary">Reset</a>
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Store</th><th>Owner</th><th>Products</th><th>Units sold</th><th>Revenue</th><th>Open order lines</th><th class="text-end">Action</th></tr></thead>
+      <tbody>
+        {% for s in rows %}
+        <tr>
+          <td><strong>{{ s.store_name }}</strong><br><small class="text-muted">joined {{ s.created_at[:10] }}</small></td>
+          <td>{{ s.name }}<br><small class="text-muted">{{ s.email }}</small></td>
+          <td>{{ s.product_count }}</td>
+          <td>{{ s.units_sold }}</td>
+          <td>₹{{ "%.2f"|format(s.revenue) }}</td>
+          <td>{% if s.open_lines %}<span class="badge bg-warning text-dark">{{ s.open_lines }}</span>{% else %}0{% endif %}</td>
+          <td class="text-end"><a href="{{ url_for('admin.delete_seller', seller_id=s.user_id) }}" class="btn btn-sm btn-outline-danger">Delete…</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-muted text-center py-3">No sellers found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

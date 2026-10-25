@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Analytics: Seller{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Sales analytics</h2>
+  <a href="{{ url_for('seller.dashboard') }}" class="btn btn-outline-secondary">← Dashboard</a>
+</div>
+
+<div class="btn-group mb-3">
+  {% for d in options %}
+  <a href="?days={{ d }}" class="btn btn-sm {{ 'btn-dark' if days == d else 'btn-outline-dark' }}">
+    {{ 'All time' if d == 0 else 'Last ' ~ d ~ ' days' }}</a>
+  {% endfor %}
+</div>
+
+<div class="row g-3 mb-4">
+  {% for label, value in [('Revenue', '₹' ~ ("%.2f"|format(r.kpis.revenue))),
+                          ('Units sold', r.kpis.units),
+                          ('Orders', r.kpis.orders),
+                          ('Avg. order value', '₹' ~ ("%.2f"|format(r.kpis.avg_order))),
+                          ('Cancelled lines', r.kpis.cancelled)] %}
+  <div class="col-6 col-lg">
+    <div class="card shadow-sm text-center p-3 h-100">
+      <div class="fs-4 fw-bold">{{ value }}</div>
+      <div class="text-muted small">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-8">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h6>Revenue per day</h6>
+      <div class="chart-box"><canvas id="daily"></canvas></div>
+    </div></div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h6>Order lines by status</h6>
+      <div class="chart-box"><canvas id="statuses"></canvas></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h6>Top products by revenue</h6>
+      <div class="chart-box"><canvas id="top"></canvas></div>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h6>Revenue by category</h6>
+      <div class="chart-box"><canvas id="categories"></canvas></div>
+    </div></div>
+  </div>
+</div>
+
+{% if r.low_stock %}
+<div class="alert alert-warning">
+  <strong>Low stock:</strong>
+  {% for p in r.low_stock %}{{ p.name }} ({{ p.stock }} left){{ ', ' if not loop.last }}{% endfor %}.
+  <a href="{{ url_for('seller.dashboard') }}">Manage products</a>
+</div>
+{% endif %}
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h6>Product performance <small class="text-muted">(lifetime, all dates)</small></h6>
+    {% if r.products %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Units sold</th><th>Revenue</th><th>Rating</th></tr></thead>
+        <tbody>
+          {% for p in r.products %}
+          <tr>
+            <td>{{ p.name }}</td>
+            <td>₹{{ "%.2f"|format(p.price) }}</td>
+            <td>{% if p.stock == 0 %}<span class="badge bg-danger">0</span>
+                {% elif p.stock <= 5 %}<span class="badge bg-warning text-dark">{{ p.stock }}</span>
+                {% else %}{{ p.stock }}{% endif %}</td>
+            <td>{{ p.units }}</td>
+            <td>₹{{ "%.2f"|format(p.revenue) }}</td>
+            <td>{{ '★ ' ~ p.avg_rating ~ ' (' ~ p.review_count ~ ')' if p.avg_rating else '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted mb-0">You haven't listed any products yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script id="chart-data" type="application/json">{{ r.charts|tojson }}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  const C = JSON.parse(document.getElementById("chart-data").textContent);
+  lineChart("daily", C.daily.labels, C.daily.values, "Revenue");
+  doughnutChart("statuses", C.statuses.labels, C.statuses.values, false);
+  barChart("top", C.top.labels, C.top.values, "Revenue");
+  doughnutChart("categories", C.categories.labels, C.categories.values, true);
+</script>
+{% endblock %}

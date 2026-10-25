@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if mode == 'edit' else 'Add' }} Product{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h3 class="mb-3">{{ 'Edit Product' if mode == 'edit' else 'Add a New Product' }}</h3>
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Product name</label>
+            <input type="text" name="name" class="form-control" maxlength="100"
+                   value="{{ values.get('name', '') }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="3">{{ values.get('description', '') or '' }}</textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Price (₹)</label>
+              <input type="number" name="price" class="form-control" step="0.01" min="0.01"
+                     value="{{ values.get('price', '') }}" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Quantity available</label>
+              <input type="number" name="stock" class="form-control" step="1" min="0"
+                     value="{{ values.get('stock', '') }}" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Category</label>
+              <select name="category_id" class="form-select">
+                <option value="">None</option>
+                {% for c in categories %}
+                  <option value="{{ c.category_id }}"
+                    {{ 'selected' if values.get('category_id')|string == c.category_id|string }}>
+                    {{ c.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary">{{ 'Save Changes' if mode == 'edit' else 'List Product' }}</button>
+          <a href="{{ url_for('seller.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

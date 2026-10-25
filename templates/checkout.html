@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Checkout: E-Mart{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Checkout</h2>
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h5>Delivery &amp; payment</h5>
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" value="{{ g.user.name }}" disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Shipping address</label>
+            <textarea name="address" class="form-control" rows="3" required
+                      placeholder="House no., street, city, PIN code">{{ values.get('address', '') }}</textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label d-block">Payment method</label>
+            {% for key, label in [('card', 'Credit / Debit card'), ('upi', 'UPI'), ('cod', 'Cash on delivery')] %}
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="method" id="m_{{ key }}" value="{{ key }}"
+                     {{ 'checked' if values.get('method') == key }} required>
+              <label class="form-check-label" for="m_{{ key }}">{{ label }}</label>
+            </div>
+            {% endfor %}
+          </div>
+          <button class="btn btn-success">Continue to payment</button>
+          <a href="{{ url_for('customer.cart') }}" class="btn btn-outline-secondary">Back to cart</a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5>Order summary</h5>
+        <ul class="list-group list-group-flush mb-3">
+          {% for it in items %}
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span>{{ it.name }} <small class="text-muted">× {{ it.quantity }}</small></span>
+            <span>₹{{ "%.2f"|format(it.price * it.quantity) }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <div class="d-flex justify-content-between fs-5 fw-bold">
+          <span>Total</span><span>₹{{ "%.2f"|format(total) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

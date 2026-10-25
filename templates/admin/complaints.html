@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import complaint_badge %}
+{% block title %}Complaints: Admin{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Admin Panel</h2>
+{% include "admin/_tabs.html" %}
+
+<div class="mb-3 d-flex gap-2 flex-wrap">
+  <a href="{{ url_for('admin.complaints') }}" class="btn btn-sm {{ 'btn-dark' if not status else 'btn-outline-dark' }}">All</a>
+  {% for s in ['open', 'resolved', 'rejected'] %}
+  <a href="{{ url_for('admin.complaints', status=s) }}" class="btn btn-sm {{ 'btn-dark' if status == s else 'btn-outline-dark' }}">{{ s|capitalize }}</a>
+  {% endfor %}
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>#</th><th>Subject</th><th>Customer</th><th>Order</th><th>Filed</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for c in rows %}
+        <tr>
+          <td>{{ c.complaint_id }}</td>
+          <td>{{ c.subject }}</td>
+          <td>{{ c.customer_name }}</td>
+          <td>{% if c.order_id %}#{{ c.order_id }}{% else %}-{% endif %}</td>
+          <td>{{ c.created_at[:16] }}</td>
+          <td>{{ complaint_badge(c.status) }}</td>
+          <td class="text-end"><a href="{{ url_for('admin.complaint_detail', complaint_id=c.complaint_id) }}" class="btn btn-sm btn-outline-primary">{{ 'Respond' if c.status == 'open' else 'View' }}</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-muted text-center py-3">No complaints here.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

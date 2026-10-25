@@ -1,0 +1,12 @@
+<ul class="nav nav-pills mb-4">
+  {% for ep, label in [('admin.dashboard', 'Dashboard'), ('admin.analytics', 'Analytics'), ('admin.users', 'Users'),
+                       ('admin.sellers', 'Sellers'), ('admin.products', 'Products'),
+                       ('admin.reviews', 'Reviews'), ('admin.complaints', 'Complaints')] %}
+  {% set is_active = request.endpoint == ep
+       or (ep == 'admin.sellers' and request.endpoint == 'admin.delete_seller')
+       or (ep == 'admin.complaints' and request.endpoint == 'admin.complaint_detail') %}
+  <li class="nav-item">
+    <a class="nav-link {{ 'active' if is_active }}" href="{{ url_for(ep) }}">{{ label }}</a>
+  </li>
+  {% endfor %}
+</ul>

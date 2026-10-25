@@ -1,0 +1,14 @@
+{% macro status_badge(status) %}
+  {% set colors = {'placed': 'primary', 'partially shipped': 'info', 'shipped': 'info',
+                   'delivered': 'success', 'cancelled': 'secondary'} %}
+  <span class="badge bg-{{ colors.get(status|lower, 'secondary') }}">{{ status|capitalize }}</span>
+{% endmacro %}
+
+{% macro method_label(method) %}
+  {{ {'card': 'Card', 'upi': 'UPI', 'cod': 'Cash on delivery'}.get(method, method) }}
+{% endmacro %}
+
+{% macro complaint_badge(status) %}
+  {% set colors = {'open': 'warning text-dark', 'resolved': 'success', 'rejected': 'secondary'} %}
+  <span class="badge bg-{{ colors.get(status, 'secondary') }}">{{ status|capitalize }}</span>
+{% endmacro %}

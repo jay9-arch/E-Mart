@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}: E-Mart{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('home') }}" class="text-decoration-none">← Back to shop</a>
+
+<div class="card shadow-sm mt-3">
+  <div class="card-body p-4">
+    {% if product.category %}<span class="badge bg-secondary mb-2">{{ product.category }}</span>{% endif %}
+    <h2>{{ product.name }}</h2>
+    {% if product.review_count %}
+      <div class="text-warning">★ {{ product.avg_rating }} <span class="text-muted">({{ product.review_count }} review{{ 's' if product.review_count != 1 }})</span></div>
+    {% endif %}
+    <p class="mt-3">{{ product.description or 'No description provided.' }}</p>
+    <p class="fs-3 fw-bold mb-1">₹{{ "%.2f"|format(product.price) }}</p>
+    <p class="text-muted mb-2">Sold by <strong>{{ product.store_name }}</strong></p>
+
+    {% if product.stock > 0 %}
+      <p class="text-success">{{ product.stock }} in stock</p>
+    {% else %}
+      <p class="text-danger">Out of stock</p>
+    {% endif %}
+
+    {% if not g.user or g.user.role == 'customer' %}
+      {% if product.stock > 0 %}
+      <form method="POST" action="{{ url_for('customer.add_to_cart', product_id=product.product_id) }}"
+            class="d-flex gap-2 align-items-center">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" style="width:90px">
+        <button class="btn btn-primary">Add to Cart</button>
+        {% if in_cart %}<span class="text-muted small">({{ in_cart }} already in your cart)</span>{% endif %}
+      </form>
+      {% endif %}
+    {% else %}
+      <p class="text-muted small">Only customer accounts can buy products.</p>
+    {% endif %}
+  </div>
+</div>
+
+<h4 class="mt-4">Reviews</h4>
+
+{% if g.user and g.user.role == 'customer' %}
+  {% if can_review %}
+  <div class="card shadow-sm mb-3 border-success">
+    <div class="card-body">
+      <h6>{{ 'Edit your review' if my_review else 'Write a review' }}
+        <span class="badge bg-success ms-1">Verified purchase</span></h6>
+      <form method="POST" action="{{ url_for('customer.submit_review', product_id=product.product_id) }}">
+        <div class="row g-2">
+          <div class="col-md-3">
+            <select name="rating" class="form-select" required>
+              <option value="">Rating…</option>
+              {% for n in [5, 4, 3, 2, 1] %}
+              <option value="{{ n }}" {{ 'selected' if my_review and my_review.rating == n }}>
+                {{ '★' * n }}{{ '☆' * (5 - n) }} ({{ n }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-9">
+            <textarea name="comment" class="form-control" rows="2" maxlength="1000"
+                      placeholder="Share your experience (optional)">{{ my_review.comment if my_review and my_review.comment else '' }}</textarea>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-success mt-2">{{ 'Update review' if my_review else 'Submit review' }}</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <p class="text-muted small">Only customers whose order for this product has been <strong>delivered</strong> can review it.</p>
+  {% endif %}
+{% elif not g.user %}
+  <p class="text-muted small"><a href="{{ url_for('auth.login') }}">Log in</a> to review products you've bought.</p>
+{% endif %}
+
+{% if reviews %}
+  {% for r in reviews %}
+  <div class="card shadow-sm mb-2 {{ 'border-primary' if g.user and r.user_id == g.user.user_id }}">
+    <div class="card-body py-2">
+      <div class="d-flex justify-content-between">
+        <div>
+          <span class="text-warning">{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</span>
+          <strong class="ms-2">{{ r.name }}</strong>
+          {% if g.user and r.user_id == g.user.user_id %}<span class="badge bg-primary">You</span>{% endif %}
+          <small class="text-muted ms-2">{{ r.created_at[:10] }}</small>
+        </div>
+        {% if g.user and r.user_id == g.user.user_id %}
+        <form method="POST" action="{{ url_for('customer.delete_review', product_id=product.product_id) }}"
+              onsubmit="return confirm('Delete your review?');">
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+        {% endif %}
+      </div>
+      {% if r.comment %}<p class="mb-0 mt-1">{{ r.comment }}</p>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">No reviews yet.</p>
+{% endif %}
+{% endblock %}

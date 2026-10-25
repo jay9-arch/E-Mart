@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Reviews: Admin{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Admin Panel</h2>
+{% include "admin/_tabs.html" %}
+
+<div class="mb-3 d-flex gap-2 flex-wrap">
+  <a href="{{ url_for('admin.reviews') }}" class="btn btn-sm {{ 'btn-dark' if not rating else 'btn-outline-dark' }}">All</a>
+  {% for n in [1, 2, 3, 4, 5] %}
+  <a href="{{ url_for('admin.reviews', rating=n) }}" class="btn btn-sm {{ 'btn-dark' if rating == n|string else 'btn-outline-dark' }}">{{ n }} ★</a>
+  {% endfor %}
+</div>
+
+{% for r in rows %}
+<div class="card shadow-sm mb-2">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between">
+      <div>
+        <span class="text-warning">{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</span>
+        <strong class="ms-2">{{ r.reviewer }}</strong>
+        <small class="text-muted ms-2">on
+          <a href="{{ url_for('customer.product_detail', product_id=r.product_id) }}">{{ r.product_name }}</a>
+          ({{ r.store_name }}) · {{ r.created_at[:10] }}</small>
+      </div>
+      <form method="POST" action="{{ url_for('admin.delete_review', review_id=r.review_id) }}"
+            onsubmit="return confirm('Delete this review?');">
+        <button class="btn btn-sm btn-outline-danger">Delete</button>
+      </form>
+    </div>
+    {% if r.comment %}<p class="mb-0 mt-1">{{ r.comment }}</p>{% endif %}
+  </div>
+</div>
+{% else %}
+<p class="text-muted">No reviews here.</p>
+{% endfor %}
+{% endblock %}

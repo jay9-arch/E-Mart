@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}New Complaint: E-Mart{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h3 class="mb-3">File a complaint</h3>
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Related order (optional)</label>
+            <select name="order_id" class="form-select">
+              <option value="">Not about a specific order</option>
+              {% for o in orders %}
+              <option value="{{ o.order_id }}" {{ 'selected' if values.get('order_id')|string == o.order_id|string }}>
+                Order #{{ o.order_id }}: {{ o.placed_at[:10] }}, ₹{{ "%.2f"|format(o.total_amount) }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Subject</label>
+            <input type="text" name="subject" class="form-control" maxlength="100"
+                   value="{{ values.get('subject', '') }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Describe the problem</label>
+            <textarea name="message" class="form-control" rows="5" maxlength="1000" required>{{ values.get('message', '') }}</textarea>
+          </div>
+          <button class="btn btn-primary">Submit complaint</button>
+          <a href="{{ url_for('customer.complaints') }}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

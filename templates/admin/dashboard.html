@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Admin Panel</h2>
+{% include "admin/_tabs.html" %}
+
+<div class="row g-3 mb-4">
+  {% for label, value, link in [
+      ('Customers', stats.customers, url_for('admin.users', role='customer')),
+      ('Sellers', stats.sellers, url_for('admin.sellers')),
+      ('Products', stats.products, url_for('admin.products')),
+      ('Orders', stats.orders, none),
+      ('Revenue (excl. cancelled)', '₹' ~ ("%.2f"|format(stats.revenue)), none),
+      ('Reviews', stats.reviews, url_for('admin.reviews')),
+      ('Open complaints', stats.open_complaints, url_for('admin.complaints', status='open')),
+      ('Deactivated customers', stats.deactivated, url_for('admin.users', role='customer'))] %}
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm text-center p-3 h-100">
+      <div class="fs-3 fw-bold">{{ value }}</div>
+      <div class="text-muted small">{{ label }}</div>
+      {% if link %}<a href="{{ link }}" class="stretched-link"></a>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5>Recent orders</h5>
+    {% if recent %}
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Placed</th></tr></thead>
+      <tbody>
+        {% for o in recent %}
+        <tr><td>#{{ o.order_id }}</td><td>{{ o.customer_name }}</td>
+            <td>₹{{ "%.2f"|format(o.total_amount) }}</td><td>{{ o.placed_at[:16] }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="text-muted mb-0">No orders yet.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

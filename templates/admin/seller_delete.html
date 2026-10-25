@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Delete seller: Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow-sm border-danger">
+      <div class="card-body p-4">
+        <h3 class="text-danger">Delete seller "{{ seller.store_name }}"?</h3>
+        <p class="text-muted">Owner: {{ seller.name }} ({{ seller.email }})</p>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100">
+              <h6 class="text-danger">Will be permanently deleted</h6>
+              <ul class="mb-0">
+                <li>The seller account and store profile</li>
+                <li><strong>{{ impact.products }}</strong> listed product(s)</li>
+                <li><strong>{{ impact.cart_rows }}</strong> cart entr(ies) in {{ impact.cart_customers }} customer cart(s)</li>
+                <li><strong>{{ impact.reviews }}</strong> review(s) on those products</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100">
+              <h6 class="text-success">Will be kept</h6>
+              <ul class="mb-0">
+                <li><strong>{{ impact.order_lines }}</strong> order line(s) in customers' order history (with product name, price and store name)</li>
+                <li>Customer accounts, payments and complaints</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {% if impact.open_lines %}
+        <div class="alert alert-warning">
+          <strong>{{ impact.open_lines }}</strong> order line(s) are still <em>placed</em> or <em>shipped</em>.
+          They will stay in history unchanged. The customer can still cancel a <em>placed</em> line themselves.
+          Consider whether those orders should be handled first.
+        </div>
+        {% endif %}
+
+        <form method="POST">
+          <label class="form-label">To confirm, type the store name: <strong>{{ seller.store_name }}</strong></label>
+          <input type="text" name="confirm_name" class="form-control mb-3" autocomplete="off" required>
+          <button class="btn btn-danger">Delete permanently</button>
+          <a href="{{ url_for('admin.sellers') }}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

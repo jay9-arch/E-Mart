@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, method_label %}
+{% block title %}Orders: Seller{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Orders for my products</h2>
+  <a href="{{ url_for('seller.dashboard') }}" class="btn btn-outline-secondary">← Dashboard</a>
+</div>
+
+<div class="mb-3 d-flex gap-2 flex-wrap">
+  {% for key, label in [('', 'All'), ('placed', 'To ship'), ('shipped', 'Shipped'), ('delivered', 'Delivered'), ('cancelled', 'Cancelled')] %}
+    <a href="{{ url_for('seller.orders', status=key) if key else url_for('seller.orders') }}"
+       class="btn btn-sm {{ 'btn-dark' if status == key else 'btn-outline-dark' }}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% if rows %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Order</th><th>Product</th><th>Qty</th><th>Amount</th><th>Customer / address</th><th>Payment</th><th>Status</th><th class="text-end">Action</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>#{{ r.order_id }}<br><small class="text-muted">{{ r.placed_at[:10] }}</small></td>
+          <td>{{ r.product_name }}</td>
+          <td>{{ r.quantity }}</td>
+          <td>₹{{ "%.2f"|format(r.unit_price * r.quantity) }}</td>
+          <td><strong>{{ r.customer_name }}</strong><br><small class="text-muted">{{ r.shipping_address }}</small></td>
+          <td>{{ method_label(r.method) }}<br><small class="text-muted">{{ r.payment_status }}</small></td>
+          <td>{{ status_badge(r.status) }}</td>
+                    <td class="text-end">
+            {% if r.status == 'placed' %}
+              <form method="POST" class="d-inline" action="{{ url_for('seller.update_order_item', item_id=r.order_item_id) }}">
+                <button name="status" value="shipped" class="btn btn-sm btn-primary">Mark shipped</button>
+                <button name="status" value="cancelled" class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Cancel this item? Stock will be restored.');">Cancel</button>
+              </form>
+            {% elif r.status == 'shipped' %}
+              <form method="POST" class="d-inline" action="{{ url_for('seller.update_order_item', item_id=r.order_item_id) }}">
+                <button name="status" value="delivered" class="btn btn-sm btn-success">Mark delivered</button>
+              </form>
+            {% elif r.status == 'delivered' %}
+              <span class="text-success small">Completed</span>
+            {% else %}
+              <span class="text-muted small">Cancelled</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+  <p class="text-muted">No orders here yet.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, method_label %}
+{% block title %}Order #{{ order.order_id }}: E-Mart{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('customer.orders') }}" class="text-decoration-none">← All orders</a>
+
+<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+    <h2 class="mb-0">Order #{{ order.order_id }}</h2>
+  <div>
+    {{ status_badge(status) }}
+    <a href="{{ url_for('customer.new_complaint', order_id=order.order_id) }}"
+       class="btn btn-sm btn-outline-secondary ms-2">Report a problem</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h6 class="text-muted">Shipping to</h6>
+      <strong>{{ order.customer_name }}</strong><br>
+      {{ order.shipping_address }}<br>
+      <small class="text-muted">Placed on {{ order.placed_at[:16] }}</small>
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h6 class="text-muted">Payment</h6>
+      {{ method_label(order.method) }}: <strong>{{ order.payment_status }}</strong><br>
+      Order total: <strong>₹{{ "%.2f"|format(order.total_amount) }}</strong>
+      {% if refunded %}<br><span class="text-success">Refund for cancelled items: ₹{{ "%.2f"|format(refunded) }}</span>{% endif %}
+    </div></div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Product</th><th>Seller</th><th>Price</th><th>Qty</th><th>Subtotal</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for it in items %}
+        <tr class="{{ 'text-muted' if it.status == 'cancelled' }}">
+          <td>
+            {% if it.product_id %}
+              <a href="{{ url_for('customer.product_detail', product_id=it.product_id) }}" class="text-decoration-none">{{ it.product_name }}</a>
+            {% else %}
+              {{ it.product_name }} <small class="text-muted">(no longer sold)</small>
+            {% endif %}
+          </td>
+          <td>{{ it.seller_name }}</td>
+          <td>₹{{ "%.2f"|format(it.unit_price) }}</td>
+          <td>{{ it.quantity }}</td>
+          <td>₹{{ "%.2f"|format(it.unit_price * it.quantity) }}</td>
+          <td>{{ status_badge(it.status) }}</td>
+          <td class="text-end">
+            {% if it.status == 'placed' %}
+            <form method="POST" action="{{ url_for('customer.cancel_item', item_id=it.order_item_id) }}"
+                  onsubmit="return confirm('Cancel this item?');">
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <button class="btn btn-sm btn-outline-danger">Cancel</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

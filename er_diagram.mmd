@@ -1,0 +1,93 @@
+erDiagram
+    users {
+        INTEGER user_id PK
+        TEXT name
+        TEXT email
+        TEXT password_hash
+        TEXT role
+        INTEGER is_active
+        TEXT created_at
+    }
+    seller_profiles {
+        INTEGER seller_id PK, FK
+        TEXT store_name
+        TEXT description
+    }
+    categories {
+        INTEGER category_id PK
+        TEXT name
+    }
+    products {
+        INTEGER product_id PK
+        INTEGER seller_id FK
+        INTEGER category_id FK
+        TEXT name
+        TEXT description
+        REAL price
+        INTEGER stock
+        TEXT created_at
+    }
+    cart_items {
+        INTEGER user_id PK, FK
+        INTEGER product_id PK, FK
+        INTEGER quantity
+    }
+    orders {
+        INTEGER order_id PK
+        INTEGER user_id FK
+        TEXT customer_name
+        TEXT shipping_address
+        REAL total_amount
+        TEXT placed_at
+    }
+    order_items {
+        INTEGER order_item_id PK
+        INTEGER order_id FK
+        INTEGER product_id FK
+        INTEGER seller_id FK
+        TEXT product_name
+        TEXT seller_name
+        REAL unit_price
+        INTEGER quantity
+        TEXT status
+    }
+    payments {
+        INTEGER payment_id PK
+        INTEGER order_id FK
+        TEXT method
+        REAL amount
+        TEXT status
+        TEXT paid_at
+    }
+    reviews {
+        INTEGER review_id PK
+        INTEGER product_id FK
+        INTEGER user_id FK
+        INTEGER rating
+        TEXT comment
+        TEXT created_at
+    }
+    complaints {
+        INTEGER complaint_id PK
+        INTEGER user_id FK
+        INTEGER order_id FK
+        TEXT subject
+        TEXT message
+        TEXT status
+        TEXT admin_response
+        TEXT created_at
+    }
+    users ||--o{ seller_profiles : "seller_id"
+    categories ||--o{ products : "category_id"
+    seller_profiles ||--o{ products : "seller_id"
+    products ||--o{ cart_items : "product_id"
+    users ||--o{ cart_items : "user_id"
+    users ||--o{ orders : "user_id"
+    seller_profiles ||--o{ order_items : "seller_id"
+    products ||--o{ order_items : "product_id"
+    orders ||--o{ order_items : "order_id"
+    orders ||--o{ payments : "order_id"
+    users ||--o{ reviews : "user_id"
+    products ||--o{ reviews : "product_id"
+    orders ||--o{ complaints : "order_id"
+    users ||--o{ complaints : "user_id"

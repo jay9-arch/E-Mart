@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_macros.html" import complaint_badge %}
+{% block title %}My Complaints: E-Mart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">My Complaints</h2>
+  <a href="{{ url_for('customer.new_complaint') }}" class="btn btn-primary">+ New complaint</a>
+</div>
+
+{% if complaints %}
+  {% for c in complaints %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between">
+        <h5 class="mb-1">{{ c.subject }}</h5>
+        {{ complaint_badge(c.status) }}
+      </div>
+      <small class="text-muted">
+        #{{ c.complaint_id }} · {{ c.created_at[:16] }}
+        {% if c.order_id %}· about <a href="{{ url_for('customer.order_detail', order_id=c.order_id) }}">Order #{{ c.order_id }}</a>{% endif %}
+      </small>
+      <p class="mt-2 mb-0">{{ c.message }}</p>
+      {% if c.admin_response %}
+      <div class="alert alert-light border mt-3 mb-0">
+        <strong>Admin response:</strong> {{ c.admin_response }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card shadow-sm p-4 text-center">
+    <p class="text-muted mb-0">You haven't filed any complaints.</p>
+  </div>
+{% endif %}
+{% endblock %}

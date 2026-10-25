@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}E-Mart: Shop{% endblock %}
+
+{% block content %}
+{% if not q and not category and not in_stock %}
+<div class="hero mb-4">
+  <h1 class="fw-bold mb-1">Welcome to E-Mart</h1>
+  <p class="mb-0">Shop from independent sellers, all in one place.</p>
+</div>
+{% endif %}
+<form method="GET" class="card shadow-sm p-3 mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label small mb-1">Search</label>
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Product, description or store">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small mb-1">Category</label>
+      <select name="category" class="form-select">
+        <option value="">All</option>
+        {% for c in categories %}
+          <option value="{{ c.category_id }}" {{ 'selected' if category|string == c.category_id|string }}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small mb-1">Sort by</label>
+      <select name="sort" class="form-select">
+        <option value="newest"     {{ 'selected' if sort == 'newest' }}>Newest</option>
+        <option value="price_asc"  {{ 'selected' if sort == 'price_asc' }}>Price: low to high</option>
+        <option value="price_desc" {{ 'selected' if sort == 'price_desc' }}>Price: high to low</option>
+        <option value="rating"     {{ 'selected' if sort == 'rating' }}>Top rated</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="in_stock" value="1" id="in_stock" {{ 'checked' if in_stock }}>
+        <label class="form-check-label" for="in_stock">In stock only</label>
+      </div>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button class="btn btn-primary flex-fill">Apply</button>
+      <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Reset</a>
+    </div>
+  </div>
+</form>
+
+{% if products %}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  {% for p in products %}
+  <div class="col">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body d-flex flex-column">
+        {% if p.category %}<span class="badge bg-secondary align-self-start mb-2">{{ p.category }}</span>{% endif %}
+        <h5 class="card-title">
+          <a href="{{ url_for('customer.product_detail', product_id=p.product_id) }}" class="text-decoration-none text-dark">{{ p.name }}</a>
+        </h5>
+        <p class="card-text text-muted small">{{ (p.description or '')[:80] }}</p>
+        {% if p.review_count %}
+          <div class="small text-warning">★ {{ p.avg_rating }} <span class="text-muted">({{ p.review_count }})</span></div>
+        {% endif %}
+        <p class="mb-1 fs-5 fw-bold">₹{{ "%.2f"|format(p.price) }}</p>
+        <small class="text-muted">Sold by {{ p.store_name }}</small>
+        {% if p.stock > 0 %}
+          <small class="text-success mb-2">{{ p.stock }} in stock</small>
+        {% else %}
+          <small class="text-danger mb-2">Out of stock</small>
+        {% endif %}
+
+        <div class="mt-auto d-flex gap-2">
+          <a href="{{ url_for('customer.product_detail', product_id=p.product_id) }}" class="btn btn-sm btn-outline-secondary">Details</a>
+          {% if not g.user or g.user.role == 'customer' %}
+          <form method="POST" action="{{ url_for('customer.add_to_cart', product_id=p.product_id) }}" class="flex-fill">
+            <input type="hidden" name="next" value="{{ request.full_path }}">
+            <button class="btn btn-sm btn-primary w-100" {{ 'disabled' if p.stock == 0 }}>Add to Cart</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+  <p class="text-muted">No products match your search.</p>
+{% endif %}
+{% endblock %}

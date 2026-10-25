@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Products: Admin{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Admin Panel</h2>
+{% include "admin/_tabs.html" %}
+
+<form method="GET" class="row g-2 mb-3">
+  <div class="col-md-6"><input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search product or store"></div>
+  <div class="col-md-6 d-flex gap-2">
+    <button class="btn btn-primary">Search</button>
+    <a href="{{ url_for('admin.products') }}" class="btn btn-outline-secondary">Reset</a>
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>ID</th><th>Product</th><th>Store</th><th>Price</th><th>Stock</th><th>In carts</th><th>Order lines</th><th class="text-end">Action</th></tr></thead>
+      <tbody>
+        {% for p in rows %}
+        <tr>
+          <td>{{ p.product_id }}</td>
+          <td><a href="{{ url_for('customer.product_detail', product_id=p.product_id) }}" class="text-decoration-none">{{ p.name }}</a><br><small class="text-muted">{{ p.category or '-' }}</small></td>
+          <td>{{ p.store_name }}</td>
+          <td>₹{{ "%.2f"|format(p.price) }}</td>
+          <td>{{ p.stock }}</td>
+          <td>{{ p.in_carts }}</td>
+          <td>{{ p.order_lines }}</td>
+          <td class="text-end">
+            <form method="POST" action="{{ url_for('admin.delete_product', product_id=p.product_id) }}"
+                  onsubmit="return confirm('Delete {{ p.name|e }}? It leaves {{ p.in_carts }} cart(s). Placed orders are kept.');">
+              <button class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-muted text-center py-3">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

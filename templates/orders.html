@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, method_label %}
+{% block title %}My Orders: E-Mart{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">My Orders</h2>
+
+{% if orders %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Order</th><th>Placed on</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td>#{{ o.order_id }}</td>
+          <td>{{ o.placed_at[:16] }}</td>
+          <td>{{ o.item_count }}</td>
+          <td>₹{{ "%.2f"|format(o.total_amount) }}</td>
+          <td>{{ method_label(o.method) }}<br><small class="text-muted">{{ o.payment_status }}</small></td>
+          <td>{{ status_badge(o.status) }}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('customer.order_detail', order_id=o.order_id) }}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+  <div class="card shadow-sm p-4 text-center">
+    <p class="text-muted mb-3">You haven't placed any orders yet.</p>
+    <a href="{{ url_for('home') }}" class="btn btn-primary align-self-center">Start shopping</a>
+  </div>
+{% endif %}
+{% endblock %}
